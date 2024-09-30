@@ -1,10 +1,9 @@
 package com.apis.gestiontareas.apigestiontareas.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 import java.util.Date;
@@ -16,12 +15,23 @@ public class Tareas {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-
     private Integer idTarea;
+
+    @NotBlank (message = "El titulo es obligatorio")
     private String titulo;
+
+    @NotBlank (message = "La descripcion es obligatoria")
     private String descripcion;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private Date fechaVencimiento;
-    private String estado = "Pendiente";
+
+    @ManyToOne
+    @JoinColumn(name = "idUsuario", nullable = true)
+    @JsonBackReference
+    private Usuario usuario;
+
+    @Enumerated(EnumType.STRING)
+    private Estado estado = Estado.PENDIENTE;
 
 }
