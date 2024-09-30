@@ -1,27 +1,43 @@
 package com.apis.gestiontareas.apigestiontareas.controller;
 
+import com.apis.gestiontareas.apigestiontareas.entity.Estado;
 import com.apis.gestiontareas.apigestiontareas.entity.Tareas;
+import com.apis.gestiontareas.apigestiontareas.entity.Usuario;
+import com.apis.gestiontareas.apigestiontareas.repository.RepositoryAuthUsuario;
 import com.apis.gestiontareas.apigestiontareas.service.TareasService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/tareas")
+@RequestMapping("/tarea")
 @AllArgsConstructor
 
 public class TareasController {
 
     private TareasService tareasService;
+    private RepositoryAuthUsuario repositoryAuthUsuario;
 
     @GetMapping("/listarTareas")
 
-    public ResponseEntity<List<Tareas>> listarTareas() {
+    public ResponseEntity<?> listarTareas(Authentication authentication) {
 
-        return new ResponseEntity<>(tareasService.listarTareas(), HttpStatus.OK);
+        String username = authentication.getName();
+        Usuario usuario = repositoryAuthUsuario.findByUsername(username).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        List<Tareas> tareas = tareasService.listarTareasPorUsuario(usuario);
+
+       if (tareas.isEmpty()) {
+
+            return ResponseEntity.status(HttpStatus.OK).body("El usuario " + username + " no tiene tareas");
+
+        }
+
+        return new ResponseEntity<>(tareas, HttpStatus.OK);
 
     }
 
@@ -29,7 +45,17 @@ public class TareasController {
 
     public ResponseEntity<Tareas> guardarTarea(@RequestBody Tareas tareas) {
 
-        return new ResponseEntity<>(tareasService.guardarTarea(tareas), HttpStatus.OK);
+        try {
+
+            tareas.setEstado(Estado.PENDIENTE);
+            Tareas agregarTarea = tareasService.guardarTarea(tareas);
+            return new ResponseEntity<>(agregarTarea, HttpStatus.CREATED);
+
+        } catch (Exception e) {
+
+            throw e;
+
+        }
 
     }
 
@@ -37,15 +63,18 @@ public class TareasController {
 
     public ResponseEntity<Tareas> actualizarTarea(@RequestBody Tareas tareas) {
 
-        return new ResponseEntity<>(tareasService.actualizarTarea(tareas), HttpStatus.OK);
+        Tareas tareaEditada = tareasService.actualizarTarea(tareas);
+        return new ResponseEntity<>(tareaEditada, HttpStatus.OK);
+
 
     }
 
     @DeleteMapping("/eliminarTarea/{idTarea}")
 
-    public void eliminarTarea(@PathVariable Integer idTarea) {
+    public ResponseEntity<?> eliminarTarea(@PathVariable Integer idTarea) {
 
         tareasService.eliminarTarea(idTarea);
+        return new ResponseEntity<>("Eliminado Correctamente",HttpStatus.OK);
 
     }
 
@@ -86,14 +115,6 @@ public class TareasController {
     public ResponseEntity<List<Tareas>> ordenarPorDescripcion() {
 
         return new ResponseEntity<>(tareasService.ordenarPorDescripcion(), HttpStatus.OK);
-
-    }
-
-    @GetMapping("/marcarComoCompletada/{idTarea}")
-
-    public ResponseEntity<Tareas> marcarComoCompletada (@PathVariable Integer idTarea) {
-
-        return new ResponseEntity<>(tareasService.marcarComoCompletada(idTarea), HttpStatus.OK);
 
     }
 

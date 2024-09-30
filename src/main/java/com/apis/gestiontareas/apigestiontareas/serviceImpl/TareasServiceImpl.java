@@ -1,9 +1,14 @@
 package com.apis.gestiontareas.apigestiontareas.serviceImpl;
 
+import com.apis.gestiontareas.apigestiontareas.entity.Estado;
 import com.apis.gestiontareas.apigestiontareas.entity.Tareas;
+import com.apis.gestiontareas.apigestiontareas.entity.Usuario;
+import com.apis.gestiontareas.apigestiontareas.exception.EntityNotFoundException;
+import com.apis.gestiontareas.apigestiontareas.repository.RepositoryAuthUsuario;
 import com.apis.gestiontareas.apigestiontareas.repository.RepositoryTareas;
 import com.apis.gestiontareas.apigestiontareas.service.TareasService;
 import lombok.AllArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,6 +19,7 @@ import java.util.List;
 public class TareasServiceImpl implements TareasService {
 
     private RepositoryTareas repositoryTareas;
+    private RepositoryAuthUsuario usuarioRepository;
 
     @Override
 
@@ -23,17 +29,6 @@ public class TareasServiceImpl implements TareasService {
 
     }
 
-    @Override
-
-    public Tareas marcarComoCompletada(Integer idTarea) {
-
-        Tareas tarea = repositoryTareas.findById(idTarea).get();
-
-        tarea.setEstado("Completada");
-
-        return repositoryTareas.save(tarea);
-
-    }
 
     @Override
 
@@ -47,6 +42,10 @@ public class TareasServiceImpl implements TareasService {
 
     public Tareas guardarTarea(Tareas tareas) {
 
+        String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Usuario usuario = usuarioRepository.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
+        tareas.setUsuario(usuario);
         return repositoryTareas.save(tareas);
 
     }
@@ -55,7 +54,20 @@ public class TareasServiceImpl implements TareasService {
 
     public Tareas actualizarTarea(Tareas tareas) {
 
-        var tareaA = repositoryTareas.findById(tareas.getIdTarea()).get();
+        String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Usuario usuario = usuarioRepository.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
+
+        var tareaA = repositoryTareas.findById(tareas.getIdTarea()).orElseThrow(
+                () -> new EntityNotFoundException("Tarea no encontrada")
+        );
+
+        if (!tareaA.getUsuario().equals(usuario)) {
+            throw new EntityNotFoundException("Esta tarea pertenece al usuario " + tareaA.getUsuario().getUsername());
+        }
+        if (tareaA.getEstado() == Estado.COMPLETADA) {
+            throw new EntityNotFoundException("No se puede editar una tarea completada");
+        }
 
         tareaA.setTitulo(tareas.getTitulo());
         tareaA.setDescripcion(tareas.getDescripcion());
@@ -70,6 +82,16 @@ public class TareasServiceImpl implements TareasService {
 
     public void eliminarTarea(Integer idTarea) {
 
+        String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Usuario usuario = usuarioRepository.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
+
+        Tareas tarea = repositoryTareas.findById(idTarea)
+                .orElseThrow(() -> new EntityNotFoundException("Tarea no encontrada"));
+
+        if (!tarea.getUsuario().equals(usuario)) {
+            throw new EntityNotFoundException("Esta tarea pertenece al usuario " + tarea.getUsuario().getUsername());
+        }
         repositoryTareas.deleteById(idTarea);
 
     }
@@ -105,4 +127,12 @@ public class TareasServiceImpl implements TareasService {
         return repositoryTareas.ordenarPorDescripcion();
 
     }
+
+    @Override
+    public List<Tareas> listarTareasPorUsuario(Usuario usuario) {
+
+        return repositoryTareas.findByUsuario(usuario);
+
+    }
 }
+

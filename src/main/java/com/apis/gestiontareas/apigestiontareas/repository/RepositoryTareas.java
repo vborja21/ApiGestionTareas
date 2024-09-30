@@ -1,6 +1,7 @@
 package com.apis.gestiontareas.apigestiontareas.repository;
 
 import com.apis.gestiontareas.apigestiontareas.entity.Tareas;
+import com.apis.gestiontareas.apigestiontareas.entity.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -9,12 +10,9 @@ import java.util.List;
 
 public interface RepositoryTareas extends JpaRepository<Tareas, Integer> {
 
-    @Modifying
-    @Query("UPDATE Tareas t SET t.estado = 'Completado' WHERE t.idTarea = :idTarea")
-
-    void marcarComoCompletada(Integer idTarea);
-
     List<Tareas> findByEstado (String estado);
+
+    List<Tareas> findByUsuario (Usuario usuario);
 
     //Filtros adicionales
 
