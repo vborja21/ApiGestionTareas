@@ -1,5 +1,6 @@
 package com.apis.gestiontareas.apigestiontareas.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -39,11 +40,15 @@ public class Usuario {
     @Column(unique = true)
     @NotBlank(message = "El login es obligatorio")
     @Size(min = 5, max = 30, message = "El login debe tener entre 5 y 30 caracteres")
-    private String login;
+    private String username;
 
     @NotBlank(message = "La contraseña es obligatoria")
     private String password;
 
+    private Boolean activo;
+
+    @Transient
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Boolean admin;
 
     @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
