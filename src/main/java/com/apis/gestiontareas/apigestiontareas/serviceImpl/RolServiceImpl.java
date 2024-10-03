@@ -6,7 +6,6 @@ import com.apis.gestiontareas.apigestiontareas.service.RolService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.io.Serial;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,7 +27,7 @@ public class RolServiceImpl implements RolService {
     @Override
     public Optional<Rol> findByNombreRol(String nombre) {
 
-        return rolRepository.findByNombreRol(nombre);
+        return rolRepository.findByNombre(nombre);
 
     }
 }

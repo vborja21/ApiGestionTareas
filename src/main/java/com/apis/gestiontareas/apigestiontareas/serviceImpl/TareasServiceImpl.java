@@ -34,12 +34,13 @@ public class TareasServiceImpl implements TareasService {
 
     public List<Tareas> findByEstado(String estado) {
 
-        return repositoryTareas.findByEstado(estado);
+        Estado estados = Estado.valueOf(estado.toUpperCase());
+
+        return repositoryTareas.findByEstado(estados);
 
     }
 
     @Override
-
     public Tareas guardarTarea(Tareas tareas) {
 
         String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();

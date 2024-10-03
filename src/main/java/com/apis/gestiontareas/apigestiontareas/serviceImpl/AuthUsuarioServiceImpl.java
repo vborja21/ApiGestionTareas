@@ -23,12 +23,6 @@ public class AuthUsuarioServiceImpl implements AuthUsuarioService {
     private PasswordEncoder passwordEncoder;
     private RepositoryAuthUsuario usuarioRepository;
 
-    @Override
-    public List<Usuario> listarUsuarios() {
-
-        return usuarioRepository.findAll();
-
-    }
 
     @Override
     public Usuario guardarUsuario(Usuario usuario) {
@@ -36,7 +30,7 @@ public class AuthUsuarioServiceImpl implements AuthUsuarioService {
         Set<Rol> roles = new HashSet<>();
 
         if (usuario.getAdmin()) {
-            Optional<Rol> optionalRolAdmin = rolRepository.findByNombreRol("ADMIN");
+            Optional<Rol> optionalRolAdmin = rolRepository.findByNombre("ADMIN");
             optionalRolAdmin.ifPresent(roles::add);
 
         }

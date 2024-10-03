@@ -1,5 +1,6 @@
 package com.apis.gestiontareas.apigestiontareas.repository;
 
+import com.apis.gestiontareas.apigestiontareas.entity.Estado;
 import com.apis.gestiontareas.apigestiontareas.entity.Tareas;
 import com.apis.gestiontareas.apigestiontareas.entity.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,7 +11,7 @@ import java.util.List;
 
 public interface RepositoryTareas extends JpaRepository<Tareas, Integer> {
 
-    List<Tareas> findByEstado (String estado);
+    List<Tareas> findByEstado (Estado estado);
 
     List<Tareas> findByUsuario (Usuario usuario);
 
